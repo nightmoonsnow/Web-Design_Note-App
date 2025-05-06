@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskList Pro - Login</title>
+    <link rel="stylesheet" href="style_login and register.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<script>
+    $(document).ready(function () {
+        $('#login-button').click(function (event) {
+            event.preventDefault();
+            const useracount = $('#useracount').val();
+            const password = $('#password').val();
+
+            let users = JSON.parse(localStorage.getItem('users')) || {};
+            if (users[useracount] && users[useracount].password === password) {
+                alert('Login successful!');
+                localStorage.setItem('currentUser', useracount);
+                window.location.href = "note.html"; // Redirect to note.html after successful login
+            } else {
+                alert('Incorrect useracount or password.');
+            }
+        });
+        $('#div_folder_up_right').hover(function () {
+                $('.dropdown-menu').stop(true, true).slideDown();
+            }, function () {
+                $('.dropdown-menu').stop(true, true).slideUp();
+            });
+
+            // Logout functionality
+            $('#logout-button').click(function () {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            });
+    });
+</script>
+
+<body>
+    <div id="container">
+
+        <form id="login-form" class="container">
+            <h2>Login</h2>
+            <input type="text" id="useracount" name="useracount" placeholder="請輸入帳號" required />
+            <input type="password" id="password" name="password" placeholder="請輸入密碼" required />
+            <button id="login-button">
+                <h2>登入</h2>
+            </button>
+            <p>
+                還沒有帳號？&emsp;
+                <a href="register.html">
+                    <b>註冊</b>
+                </a>
+            </p>
+        </form>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="script.js"></script>
+    </div>
+    <div id="div_folder">
+        <div id="div_folder_up">
+            <div id="div_folder_up_left">
+                <a href="note.html">
+                    <img src="./image/img_list.png" alt="">
+                </a>
+                <a href="profile.html">
+                    <img src="./image/img_user.png" alt="">
+                </a>
+            </div>
+            <div id="div_folder_up_right">
+                <ul>
+                    <li>
+                        <p id="UserName">User Name</p>
+                        <div class="dropdown-menu">
+                            <ul>
+                                <li><a href="profile.html">Profile</a></li>
+                                <li><a href="#" id="logout-button">Logout</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div id="div_folder_down">
+
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskList Pro - Note</title>
+    <link rel="stylesheet" href="style_note.css">
+    <link href="./jquery-ui.min.css" rel="stylesheet">
+    <link href="./jquery-ui.js" rel="stylesheet">
+    <link href="./jquery-ui.min.js" rel="stylesheet">
+    <link href="./script.js" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                alert('Please login first.');
+                window.location.href = 'login.html';
+            }
+
+            // Update the username displayed with the currentUser
+            $('#UserName').text(currentUser);
+
+
+            let users = JSON.parse(localStorage.getItem('users')) || {};
+            let tasks = users[currentUser]?.tasks || [];
+            function saveTasks() {
+                users[currentUser].tasks = tasks;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+
+            function loadTasks() {
+                tasks.forEach(task => {
+                    let newItem = `
+                    <div class="accordion-item editable-content" data-datetime="${task.formattedDateTime}" contenteditable="true">
+                        <div class="accordion-title">
+                            <table class="table-title table_title">
+                                <tr>
+                                    <th>&emsp;&emsp;｜</th>
+                                    <th>${task.content1_title}</th>
+                                    <th>｜</th>
+                                    <th>${task.year}</th>
+                                    <th>｜</th>
+                                    <th>${task.month}</th>
+                                    <th>｜</th>
+                                    <th>${task.day}</th>
+                                    <th>｜</th>
+                                    <th>${task.hours}:${task.minutes}</th>
+                                    <th>｜&emsp;&emsp;</th>
+                                </tr>
+                                <th class="delete-button" contenteditable="false">ｘ</th>
+                            </table>
+                        </div>
+                        <div class="accordion-content">
+                            <table class="table-content">
+                                <tr class="table-outline tr_width">
+                                    <th class="table-outline th_left">
+                                        副標
+                                    </th>
+                                    <th class="table-outline th_right">
+                                        ${task.content2_subscript}
+                                    </th>
+                                </tr>
+                                <tr class="table-outline tr_width">
+                                    <th class="table-outline th_left">
+                                        詳細內容
+                                    </th>
+                                    <th class="table-outline th_right">
+                                        ${task.content5_details}
+                                    </th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>`;
+                    $('.accordion').append(newItem);
+                });
+            }
+
+            loadTasks();
+
+            // Toggle the content on click
+            $(document).on('click', '.accordion-title', function () {
+                $(this).next('.accordion-content').slideToggle();
+                $('.accordion-content').not($(this).next()).slideUp();
+            });
+
+            $(document).on({
+                mouseenter: function () {
+                    $(this).find('.delete-button').css('display', 'inline-block');
+                    $(this).css('padding-right', '60px');
+                },
+                mouseleave: function () {
+                    $(this).find('.delete-button').hide();
+                    $(this).css('padding-right', '0px');
+                }
+            }, '.accordion-title');
+
+            // Delete the block on delete button click
+            $(document).on('click', '.delete-button', function () {
+                const index = $(this).closest('.accordion-item').index() - 1; // Adjust index for header row
+                tasks = tasks.splice(index, 1);
+                saveTasks();
+                $(this).closest('.accordion-item').remove();
+                
+            });
+
+            $('#toggle-sidebar').click(function () {
+                var sidebar = $('#sidebar');
+                if (sidebar.css('left') === '-500px') {
+                    sidebar.animate({ left: '0px' }, 300);
+                } else {
+                    sidebar.animate({ left: '-500px' }, 300);
+                }
+            });
+
+            $('#add-sidebar-content').click(function () {
+                var content1_title = $('#sidebar .editable-area').eq(0).val().trim();
+                var content2_subscript = $('#sidebar .editable-area').eq(1).val().trim();
+                var content3_year_month_day = $('#sidebar .editable-area').eq(2).val();
+                var content4_time = $('#sidebar .editable-area').eq(3).val();
+                var content5_details = $('#sidebar .editable-area').eq(4).val().trim();
+
+                // Get the current time
+                var now = new Date();
+                var dateObject = new Date(content3_year_month_day + 'T' + content4_time);
+
+                if (content1_title === "") {
+                    alert("請輸入有效的標題！");
+                    return;
+                } else if (content2_subscript === "") {
+                    alert("請輸入有效的副標題！");
+                    return;
+                } else if (isNaN(dateObject)) {
+                    alert("請輸入日期和時間！");
+                    return;
+                } else if (dateObject < now) {
+                    alert("日期時間不可以小於現在時間！");
+                    return;
+                } else if (content5_details === "") {
+                    alert("請輸入有效的描述！");
+                    return;
+                }
+                var year = dateObject.getFullYear();
+                var month = ("0" + (dateObject.getMonth() + 1)).slice(-2); // Ensure month is two digits
+                var day = ("0" + dateObject.getDate()).slice(-2); // Ensure day is two digits
+                var hours = ("0" + dateObject.getHours()).slice(-2); // Ensure hours are two digits
+                var minutes = ("0" + dateObject.getMinutes()).slice(-2); // Ensure minutes are two digits
+
+                var formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+                var newItem = `
+        <div class="accordion-item editable-content" data-datetime="${formattedDateTime}" contenteditable="true">
+            <div class="accordion-title">
+                <table class="table-title table_title">
+                    <tr>
+                        <th>&emsp;&emsp;｜</th>
+                        <th>${content1_title}</th>
+                        <th>｜</th>
+                        <th>${year}</th>
+                        <th>｜</th>
+                        <th>${month}</th>
+                        <th>｜</th>
+                        <th>${day}</th>
+                        <th>｜</th>
+                        <th>${hours}:${minutes}</th>
+                        <th>｜&emsp;&emsp;</th>
+                    </tr>
+                    <th class="delete-button" contenteditable="false">ｘ</th>
+                </table>
+            </div>
+            <div class="accordion-content">
+                <table class="table-content">
+                    <tr class="table-outline tr_width">
+                        <th class="table-outline th_left">
+                            副標
+                        </th>
+                        <th class="table-outline th_right">
+                            ${content2_subscript}
+                        </th>
+                    </tr>
+                    <tr class="table-outline tr_width">
+                        <th class="table-outline th_left">
+                            詳細內容
+                        </th>
+                        <th class="table-outline th_right">
+                            ${content5_details}
+                        </th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    `;
+
+                tasks.push({
+                    content1_title,
+                    content2_subscript,
+                    year,
+                    month,
+                    day,
+                    hours,
+                    minutes,
+                    formattedDateTime,
+                    content5_details
+                });
+
+                saveTasks();
+
+                $('.accordion').append(newItem);
+                sortAccordionItems();
+            });
+
+            function sortAccordionItems() {
+                var $accordionItems = $('.accordion-item');
+                $accordionItems.sort(function (a, b) {
+                    var dateA = new Date($(a).attr('data-datetime'));
+                    var dateB = new Date($(b).attr('data-datetime'));
+                    return dateA - dateB; // Sort in ascending order
+                });
+                $('.accordion').html($accordionItems);
+            }
+
+            $('#div_folder_up_right').hover(function () {
+                $('.dropdown-menu').stop(true, true).slideDown();
+            }, function () {
+                $('.dropdown-menu').stop(true, true).slideUp();
+            });
+
+            // Logout functionality
+            $('#logout-button').click(function () {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="div_folder_top"></div>
+
+    <div id="div_folder_up">
+        <div id="div_folder_up_left">
+            <a href="note.html">
+                <img src="./image/img_list.png" alt="">
+            </a>
+            <a href="profile.html">
+                <img src="./image/img_user.png" alt="">
+            </a>
+        </div>
+        <div id="div_folder_up_right">
+            <ul>
+                <li>
+                    <p id="UserName">User Name</p>
+                    <div class="dropdown-menu">
+                        <ul>
+                            <li><a href="profile.html">Profile</a></li>
+                            <li><a href="#" id="logout-button">Logout</a></li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="div_folder_down">
+
+        <div class='accordion' id="listRange">
+
+            <table id="table_title">
+                <tr>
+                    <th>&emsp;&emsp;｜</th>
+                    <th>Task's Title Name</th>
+                    <th>｜</th>
+                    <th>Deadline Year</th>
+                    <th>｜</th>
+                    <th>Deadline Month</th>
+                    <th>｜</th>
+                    <th>Deadline Date</th>
+                    <th>｜</th>
+                    <th>Deadline Time</th>
+                    <th>｜&emsp;&emsp;</th>
+                </tr>
+            </table>
+
+            <div class="accordion-item editable-content" contenteditable="true">
+                <div class="accordion-title">
+                    <table class="table-title table_title">
+                        <tr>
+                            <th>&emsp;&emsp;｜</th>
+                            <th>Example Title</th>
+                            <th>｜</th>
+                            <th>Example Ending Year</th>
+                            <th>｜</th>
+                            <th>Example Ending Month</th>
+                            <th>｜</th>
+                            <th>Example Ending Date</th>
+                            <th>｜</th>
+                            <th>Example Ending Time</th>
+                            <th>｜&emsp;&emsp;</th>
+                        </tr>
+                        <th class="delete-button" contenteditable="false">ｘ</th>
+                    </table>
+                </div>
+                <div class="accordion-content">
+                    <table class="table-content">
+                        <tr class="table-outline tr_width">
+                            <th class="table-outline th_left">
+                                副標
+                            </th>
+                            <th class="table-outline th_right">
+                                Example subscript
+                            </th>
+                        </tr>
+                        <tr class="table-outline tr_width">
+                            <th class="table-outline th_left">
+                                詳細內容
+                            </th>
+                            <th class="table-outline th_right">
+                                Example details
+                            </th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="sidebar">
+
+            <div id="sidebar_left">
+                <p id="sidebar_title">｜&emsp;Create your to-do items&emsp;｜</p>
+                <input type="text" class="editable-area" contenteditable="true" data-placeholder="Edit Area 1"
+                    placeholder="Please enter title">
+                <input type="text" class="editable-area" contenteditable="true" data-placeholder="Edit Area 2"
+                    placeholder="Please enter subscript">
+                <input type="date" class="editable-area" contenteditable="true" data-placeholder="Edit Area 3"
+                    placeholder="Please enter the ending year/month/day">
+                <input type="time" class="editable-area" contenteditable="true" data-placeholder="Edit Area 4"
+                    placeholder="Please enter deadline">
+                <input type="text" class="editable-area" contenteditable="true" data-placeholder="Edit Area 5"
+                    placeholder="Please enter more details">
+                <button id="add-sidebar-content">Add to Accordion</button>
+            </div>
+
+            <div id="sidebar_right">
+                <button id="toggle-sidebar"></button>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

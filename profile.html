@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskList Pro - Profile</title>
+    <link rel="stylesheet" href="style_profile.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<script>
+    $(document).ready(function () {
+        let currentUser = localStorage.getItem('currentUser');
+        if (!currentUser) {
+            alert('Please login first.');
+            window.location.href = 'login.html';
+        }
+
+        // Update the username displayed with the currentUser
+        $('#UserName').text(currentUser);
+
+        let users = JSON.parse(localStorage.getItem('users'));
+
+        // Load current user data
+        function loadUserData() {
+            $('#useracount').val(currentUser);
+            $('#password').val(users[currentUser].password);
+
+            // Load avatar if exists
+            let avatar = users[currentUser].avatar;
+            if (avatar) {
+                $('#avatar-preview').attr('src', avatar);
+            }
+        }
+
+        loadUserData();
+
+        // Save updated user data
+        $('#save-profile').click(function () {
+            let userAcount = $('#useracount').val().trim();
+            let newPassword = $('#password').val().trim();
+
+            if (userAcount === '' || newPassword === '') {
+                alert('Account and Password cannot be empty.');
+                return;
+            }
+
+            // Check if useracount is changed and not already taken
+            if (userAcount !== currentUser && users[userAcount]) {
+                alert('Account is already taken.');
+                return;
+            }
+
+            // Update user data
+            if (userAcount !== currentUser) {
+                users[userAcount] = users[currentUser];
+                delete users[currentUser];
+                currentUser = userAcount;
+                localStorage.setItem('currentUser', userAcount);
+            }
+            users[currentUser].password = newPassword;
+
+            // Save avatar
+            let avatar = $('#avatar-preview').attr('src');
+            users[currentUser].avatar = avatar;
+
+            localStorage.setItem('users', JSON.stringify(users));
+
+            alert('Profile updated successfully.');
+        });
+
+        $('#div_folder_up_right').hover(function () {
+                $('.dropdown-menu').stop(true, true).slideDown();
+            }, function () {
+                $('.dropdown-menu').stop(true, true).slideUp();
+            });
+
+            // Logout functionality
+            $('#logout-button').click(function () {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'login.html';
+            });
+    });
+</script>
+
+<body>
+    <div id="div_folder_top"></div>
+    <div id="div_folder_up">
+        <div id="div_folder_up_left">
+            <a href="note.html">
+                <img src="./image/img_list.png" alt="">
+            </a>
+            <a href="profile.html">
+                <img src="./image/img_user.png" alt="">
+            </a>
+        </div>
+        <div id="div_folder_up_right">
+            <ul>
+                <li>
+                    <p id="UserName">User Name</p>
+                    <div class="dropdown-menu">
+                        <ul>
+                            <li><a href="profile.html">Profile</a></li>
+                            <li><a href="#" id="logout-button">Logout</a></li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="div_folder_down">
+        <div id="div_container">
+            <div id="div_container_up">
+
+                <div id="div_container_left" class="preview-container">
+                    <label for="avatar-input">
+                        <img id="avatar-preview" src="./image/img_bear_50.png" alt="Avatar Preview"
+                            class="avatar-preview">
+                    </label>
+                    <input type="file" id="avatar-input" style="display: none;">
+                </div>
+
+                <div id="div_container_right" class="input-container">
+
+                    <label for="useracount">Account:</label>
+                    <input type="text" id="useracount" name="useracount">
+
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password">
+                </div>
+
+            </div>
+            <div id="div_container_down">
+                <button id="save-profile">Save Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const avatarInput = document.getElementById('avatar-input');
+        const avatarPreview = document.getElementById('avatar-preview');
+
+        // Click avatar preview to trigger file dialog
+        avatarPreview.addEventListener('click', function (event) {
+            event.preventDefault();
+            avatarInput.click();
+        });
+
+        // Preview avatar and store it in localStorage
+        avatarInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = function () {
+                avatarPreview.src = reader.result;
+
+                // Save the avatar to localStorage
+                let currentUser = localStorage.getItem('currentUser');
+                let users = JSON.parse(localStorage.getItem('users'));
+                users[currentUser].avatar = reader.result;
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                avatarPreview.src = './image/img_bear_50.png';
+            }
+        });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
